@@ -48,7 +48,7 @@ function doStuff(a, b) {
         for (let item of items) {
             if (item.name === b[0]) {
                 if (a === "sale" && item.quantity >= b[1]) {
-                    selectItem(item,b);
+                    saleItem(item,b);
                 } else if (a === "restock") {
                     restockItem(item,b);
                 }
