@@ -34,9 +34,7 @@ class Rectangle {
   calculatePerimeter() {
     return 2 * this.width + 2 * this.height;
   }
-  // getPerimeter() {
-  //   return 2 * this.w + 2 * this.h;
-  // }
+  
 
   updateMyHeight(height) {
     if (height && height > 0) {
@@ -46,7 +44,7 @@ class Rectangle {
       }
       this.height = height;
     }
-    //TODO: handle case of updating the height of square
+    
   }
 
   // update the width and height of the rectangle

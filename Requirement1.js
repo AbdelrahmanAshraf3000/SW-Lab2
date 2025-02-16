@@ -1,24 +1,36 @@
 var items = [], transactions = [], categories = [], field = {};
 
+function addItem(b){
+    var item = { name: b[0], category: b[1], quantity: b[2], price: b[3], unit: b[4], added: new Date(), custF: b[5] || {} };
+    items.push(item);
+
+    if (!categories.includes(b[1])) 
+        categories.push(b[1]);
+
+    transactions.push({ type: "add", item });
+}
+
+function editItem(b){
+    transactions.push({ type: "edit", oldItems: items[b[0]], newItems: b.slice(1) });
+
+    items[b[0]] = { ...items[b[0]], name: b[1], category: b[2], quantity: b[3], price: b[4], unit: b[5], custF: b[6] || {} };
+
+}
+
+function removeItem(b){
+    transactions.push({ type: "delete", item: items[b[0]] });
+    items.splice(b[0], 1);
+}
+
 function doStuff(a, b) {
     if (["add", "edit", "removeItem"].includes(a)) {
         if (a === "add") {
-            var item = { name: b[0], category: b[1], quantity: b[2], price: b[3], unit: b[4], added: new Date(), custF: b[5] || {} };
-            items.push(item);
-
-            if (!categories.includes(b[1])) 
-                categories.push(b[1]);
-
-            transactions.push({ type: "add", item });
+            addItem(b);
         } else if (a === "edit" && items[b[0]]) {
-
-            transactions.push({ type: "edit", oldItems: items[b[0]], newItems: b.slice(1) });
-
-            items[b[0]] = { ...items[b[0]], name: b[1], category: b[2], quantity: b[3], price: b[4], unit: b[5], custF: b[6] || {} };
-
+            editItem(b);
+           
         } else if (a === "removeItem" && items[b[0]]) {
-            transactions.push({ type: "delete", item: items[b[0]] });
-            items.splice(b[0], 1);
+           removeItem(b);
         }
         console.log("=== Dashboard ===\nItems: " + items.length + "\nTotal: $" + 
             items.reduce((tot, x) => tot + x.quantity * x.price, 0).toFixed(2) + "\nCats: " + categories.join(', '));
