@@ -21,7 +21,16 @@ function removeItem(b){
     transactions.push({ type: "delete", item: items[b[0]] });
     items.splice(b[0], 1);
 }
-
+function saleItem(item,b){
+    item.quantity -= b[1];
+    transactions.push({ type: "sale", item: item, qtyS: b[1], d: new Date() });
+    console.log(`Sold ${b[1]} ${item.unit} of ${item.name}`);
+}
+function restockItem(item,b){
+    item.quantity += b[1];
+    transactions.push({ type: "restock", item: item, qtyR: b[1], d: new Date() });
+    console.log(`Restocked ${b[1]} ${item.unit} of ${item.name}`);
+}
 function doStuff(a, b) {
     if (["add", "edit", "removeItem"].includes(a)) {
         if (a === "add") {
@@ -39,13 +48,9 @@ function doStuff(a, b) {
         for (let item of items) {
             if (item.name === b[0]) {
                 if (a === "sale" && item.quantity >= b[1]) {
-                    item.quantity -= b[1];
-                    transactions.push({ type: "sale", item: item, qtyS: b[1], d: new Date() });
-                    console.log(`Sold ${b[1]} ${item.unit} of ${item.name}`);
+                    selectItem(item,b);
                 } else if (a === "restock") {
-                    item.quantity += b[1];
-                    transactions.push({ type: "restock", item: item, qtyR: b[1], d: new Date() });
-                    console.log(`Restocked ${b[1]} ${item.unit} of ${item.name}`);
+                    restockItem(item,b);
                 }
                 break;
             }
