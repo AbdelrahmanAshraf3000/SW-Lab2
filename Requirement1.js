@@ -1,84 +1,167 @@
-var items = [], transactions = [], categories = [], field = {};
+// create arrays to store items, transactions, categories, and custom fields
+let items = [], transactions = [], categories = [], customField = {};
 
-function addItem(b){
-    var item = { name: b[0], category: b[1], quantity: b[2], price: b[3], unit: b[4], added: new Date(), custF: b[5] || {} };
+// Function to add a new item to the inventory
+function addItem(input){
+    const [name, category, quantity, price, unit, customField = {}] = input;
+    const item = { name, category, quantity, price, unit, added: new Date(), customField };
     items.push(item);
-
-    if (!categories.includes(b[1])) 
-        categories.push(b[1]);
-
+    if (!categories.includes(category)) categories.push(category);
     transactions.push({ type: "add", item });
+    displayDashboard();
 }
 
-function editItem(b){
-    transactions.push({ type: "edit", oldItems: items[b[0]], newItems: b.slice(1) });
-
-    items[b[0]] = { ...items[b[0]], name: b[1], category: b[2], quantity: b[3], price: b[4], unit: b[5], custF: b[6] || {} };
-
-}
-
-function removeItem(b){
-    transactions.push({ type: "delete", item: items[b[0]] });
-    items.splice(b[0], 1);
-}
-function saleItem(item,b){
-    item.quantity -= b[1];
-    transactions.push({ type: "sale", item: item, qtyS: b[1], d: new Date() });
-    console.log(`Sold ${b[1]} ${item.unit} of ${item.name}`);
-}
-function restockItem(item,b){
-    item.quantity += b[1];
-    transactions.push({ type: "restock", item: item, qtyR: b[1], d: new Date() });
-    console.log(`Restocked ${b[1]} ${item.unit} of ${item.name}`);
-}
-function doStuff(a, b) {
-    if (["add", "edit", "removeItem"].includes(a)) {
-        if (a === "add") {
-            addItem(b);
-        } else if (a === "edit" && items[b[0]]) {
-            editItem(b);
-           
-        } else if (a === "removeItem" && items[b[0]]) {
-           removeItem(b);
-        }
-        console.log("=== Dashboard ===\nItems: " + items.length + "\nTotal: $" + 
-            items.reduce((tot, x) => tot + x.quantity * x.price, 0).toFixed(2) + "\nCats: " + categories.join(', '));
+// Function to edit an existing item in the inventory
+function editItem(input){
+    const [index, name, category, quantity, price, unit, customField = {}] = input;
+    if (items[index]) {
+        transactions.push({ type: "edit", old: items[index], new: input.slice(1) });
+        items[index] = { ...items[index], name, category, quantity, price, unit, customField };
+        displayDashboard();
     }
-    if (["sale", "restock"].includes(a)) {
-        for (let item of items) {
-            if (item.name === b[0]) {
-                if (a === "sale" && item.quantity >= b[1]) {
-                    saleItem(item,b);
-                } else if (a === "restock") {
-                    restockItem(item,b);
-                }
-                break;
-            }
+}
+
+// Function to remove an item from the inventory
+function removeItem(input){
+    const [index] = input;
+    if (items[index]) {
+        transactions.push({ type: "delete", item: items[index] });
+        items.splice(index, 1);
+        displayDashboard();
+        checkLowStock(items[index]);
+    }
+}
+
+// Function to process a sale of an item
+function saleItem(input){
+    const [name, quantity] = input;
+    for (let item of items) {
+        if (item.name === name && item.quantity >= quantity) {
+            item.quantity -= quantity;
+            transactions.push({ type: "sale", item, quantitySold: quantity, date: new Date() });
+            console.log(`Sold ${quantity} ${item.unit} of ${item.name}`);
+            checkLowStock(item);
+            break;
         }
     }
+    
+}
 
-    if (a === "search"){
-        console.log(items.filter(x => [x.name, x.category, x.price]
-            .some(v => v.toString()
-            .toLowerCase()
-            .includes(b[0].toLowerCase()))));
+// Function to restock an item in the inventory
+function restockItem(input){
+    const [name, quantity] = input;
+    for (let item of items) {
+        if (item.name === name) {
+            item.quantity += quantity;
+            transactions.push({ type: "restock", item, quantityRestocked: quantity, date: new Date() });
+            console.log(`Restocked ${quantity} ${item.unit} of ${item.name}`);
+            break;
+        }
     }
-    if (a === "viewItems") 
-        console.log("=== Inv ===", items);
-    if (a === "exportAllItems") {
-        console.log("CSV:\n" + ["Name,Category,Quantity,Price,Unit,AddedAt"]
-            .concat(items.map(x => Object.values(x).join(','))).join('\n'));
+}
+
+// Function to check if an item's quantity is below 10 and log an alert if so
+function checkLowStock(item) {
+    if (item.quantity < 10) {
+        console.log(`ALERT: Item ${item.name} is below 10 units! Curent quantity: ${item.quantity}`);
     }
-    if (a === "viewAllTransactions") 
-        console.log("Transactions:\n", transactions);
-    if (a === "viewIAverage") {
-        console.log(items.map(x => `${x.name}: ${Math.floor((new Date() - new Date(x.added)) / (1000 * 60 * 60 * 24))}d`)
-        .join('\n'));
+}
+
+// Function to search for items based on a query
+function searchItems(input) {
+    console.log(items.filter(item => [item.name, item.category, item.price]
+        .some(value => value.toString()
+        .toLowerCase()
+        .includes(input[0].toLowerCase()))));
+}
+
+function viewInventory() {
+    console.log("=== Inventory ===", items);
+}
+
+function exportAll() {
+    console.log("CSV:\n" + ["Name,Category,Quantity,Price,Unit,AddedAt"]
+        .concat(items.map(item => Object.values(item).join(','))).join('\n'));
+}
+
+function viewAllTransactions() {
+    console.log("Transactions:\n", transactions);
+}
+
+// Function to view the age of each item in the inventory
+function viewItemAge() {
+    console.log(items.map(item => `${item.name}: ${Math.floor((new Date() - new Date(item.added)) 
+        / (1000 * 60 * 60 * 24))}d`).join('\n'));
+}
+
+function importItems(input) {
+    const [itemsToImport] = input;
+    itemsToImport.forEach(item => doStuff("add", [item.name, item.category, item.quantity, item.price, item.unit]));
+}
+
+// Function to add a customer field to the inventory system
+function addField(input) {
+    const [fieldName] = input;
+    if (!customField[fieldName]) 
+        customField[fieldName] = null;
+}
+
+// Function to update a custom field for a specific item
+function updateCustomField(input) {
+    const [itemName] = input;
+    items.find(item => item.name === itemName)?.customFields[input[1]] = input[2];
+}
+
+// Function to display the dashboard with summary information
+function displayDashboard() {
+    console.log(`=== Dashboard ===\nItems: ${items.length}\nTotal: $${items.reduce((total, item) => 
+        total + item.quantity * item.price, 0).toFixed(2)}\nCategories: ${categories.join(', ')}`);
+}
+
+// Function to handle different actions based on the input
+function doStuff(action, input) {
+    switch (action) {
+        case "add":
+            addItem(input);
+            break;
+        case "edit":
+            editItem(input);
+            break;
+        case "removeItem":
+            removeItem(input);
+            break;
+        case "Sale":
+            processSale(input);
+            break;
+        case "restock":
+            restockItem(input);
+            break;
+        case "search":
+            searchItems(input);
+            break;
+        case "viewInventory":
+            viewInventory();
+            break;
+        case "exportAll":
+            exportAll();
+            break;
+        case "viewAllTtansactions":
+            viewAllTransactions();
+            break;
+        case "viewItemAge":
+            viewItemAge();
+            break;
+        case "import":
+            importItems(input);
+            break;
+        case "addField":
+            addField(input);
+            break;
+        case "updateCustomField":
+            updateCustomField(input);
+            break;
+        default:
+            console.log("Invalid action");
     }
-    if (a==="importItems") 
-        b[0].forEach(x => doStuff("add", [x.name, x.category, x.quantity, x.price, x.unit]));
-    if (a === "addFld" && !f[b[0]]) 
-        f[b[0]] = null;
-    if (a === "udCFld") 
-        items.find(x => x.name === b[0])?.custF[b[1]] = b[2];
+    
 }

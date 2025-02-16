@@ -4,8 +4,8 @@
 3- apply all the concepts you learned during this lab (Naming, comments,  functions)
 */
 
-class pt {
-  //this constructor is used to construct the pt class
+class Point {
+  //this constructor is used to construct the point class with x and y coordinates
   constructor(coordX, coordY) {
     this.coordX = coordX;
     this.coordY = coordY;
@@ -27,19 +27,20 @@ class Rectangle {
   // METHODS
   // ***************
 
-  area() {
+  // Calculate the area of the rectangle
+  calculateArea() {
     return this.width * this.height;
   }
 
+  // Calculate the perimeter of the rectangle
   calculatePerimeter() {
     return 2 * this.width + 2 * this.height;
   }
   
-
-  updateMyHeight(height) {
+// Update the height of the rectangle
+  updateHeight(height) {
     if (height && height > 0) {
-      if(this.height === this.width){
-        this.height = height;
+      if(this.height === this.width){   // this checks if the rectangle is a square
         this.width = height;
       }
       this.height = height;
@@ -48,7 +49,7 @@ class Rectangle {
   }
 
   // update the width and height of the rectangle
-  update({ startingPoint, width, height }) {
+  updateDimensions({ startingPoint, width, height }) {
     if (!height || height <= 0 || !width || width <= 0) {
       throw Error("invalid Width and Height"); 
     }
@@ -58,50 +59,52 @@ class Rectangle {
     this.height = height;
   }
 
-  fetchHeight() {
+  getHeight() {
     return this.height;
-  }
-
-  //function that print the endpoints
-  endPoints() {
-    const topRight = this.startingPoint.coordX + this.width;
-    const bottomLeft = this.startingPoint.coordY + this.height;
-
-    console.log("End Point X-Axis (Top Right): " + topRight);
-    console.log("End Point Y-Axis (Bottom Left): " + bottomLeft);
   }
 
   getWidth() {
     return this.width;
   }
-}
 
-function buildObject(width, coordX, height, coordY) {
-  const mainPoint = new pt(coordX, coordY);
-  const rect = new Rectangle(mainPoint, width, height);
+  //function that print the endpoints
+  printEndPoints() {
+    const topRightX = this.startingPoint.coordX + this.width;
+    const bottomLeftY = this.startingPoint.coordY + this.height;
 
-  return rect;
-}
-
-function construct_Square(cordX, cordY, SquareHeight) {
-  let square;
-
-  if (!SquareHeight || SquareHeight <= 0) {
-    square = buildObject(SquareHeight, cordX, SquareHeight, cordY);
+    console.log("End Point X-Axis (Top Right): " + topRightX);
+    console.log("End Point Y-Axis (Bottom Left): " + bottomLeftY);
   }
 
-  const square_area = square.area();
-  const squarePerimeter = square.calculatePerimeter();
-
-  console.log("square Area ", square_area);
-  console.log("square Perimeter ", squarePerimeter);
+  
 }
 
-const myRect = buildObject(2, 3, 5, 4);
-const sq = construct_Square();
+// Function to create a rectangle object
+function createRectangle(width, coordX, height, coordY) {
+  const startingPoint = new Point(coordX, coordY);
+  return new Rectangle(startingPoint, width, height);
+}
 
-console.log(sq.calculatePerimeter());
+function createSquare(coordX, coordY, squareLength) {
+  if (!squareLength || squareLength <= 0) {
+    throw Error("invalid square length");
+  }
+  const square = createRectangle(squareLength, coordX, squareLength, coordY);
+  const squareArea = square.calculateArea();
+  const squarePerimeter = square.calculatePerimeter();
 
-sq.endPoints();
+  console.log("square Area ", squareArea);
+  console.log("square Perimeter ", squarePerimeter);
+  
+  return square;
+}
 
-myRect.updateMyHeight(3);
+// Function to create a square object and test functions above
+const myRectangle = createRectangle(2, 3, 5, 4);
+const mySquare = createSquare(1, 1, 3);
+
+console.log(mySquare.calculatePerimeter());
+
+mySquare.printEndPoints();
+
+myRectangle.updateHeight(3);
