@@ -70,9 +70,9 @@ function checkLowStock(item) {
 // Function to search for items based on a query
 function searchItems(input) {
     console.log(items.filter(item => [item.name, item.category, item.price]
-        .some(value => value.toString()
-        .toLowerCase()
-        .includes(input[0].toLowerCase()))));
+        .some(value => value.toString().toLowerCase().includes(input[0].toLowerCase())))
+        .map(item => `${item.name} (${item.category}) - ${item.quantity} ${item.unit} @ $${item.price}`)
+        .join('\n'));
 }
 
 function viewInventory() {
@@ -85,7 +85,7 @@ function exportAll() {
 }
 
 function viewAllTransactions() {
-    console.log("Transactions:\n", transactions);
+    console.log("Transactions:\n", transactions.map(transaction => `${transaction.type} - ${transaction.item.name}`).join('\n'));
 }
 
 // Function to view the age of each item in the inventory
@@ -95,8 +95,7 @@ function viewItemAge() {
 }
 
 function importItems(input) {
-    const [itemsToImport] = input;
-    itemsToImport.forEach(item => doStuff("add", [item.name, item.category, item.quantity, item.price, item.unit]));
+    input.forEach(item => doStuff("add", [item.name, item.category, item.quantity, item.price, item.unit]));
 }
 
 // Function to add a customer field to the inventory system
@@ -109,7 +108,7 @@ function addField(input) {
 // Function to update a custom field for a specific item
 function updateCustomField(input) {
     const [itemName] = input;
-    items.find(item => item.name === itemName)?.customFields[input[1]] = input[2];
+    items.find(item => item.name === itemName).customField[input[1]] = input[2];
 }
 
 // Function to display the dashboard with summary information
@@ -130,8 +129,8 @@ function doStuff(action, input) {
         case "removeItem":
             removeItem(input);
             break;
-        case "Sale":
-            processSale(input);
+        case "sale":
+            saleItem(input);
             break;
         case "restock":
             restockItem(input);
@@ -145,7 +144,7 @@ function doStuff(action, input) {
         case "exportAll":
             exportAll();
             break;
-        case "viewAllTtansactions":
+        case "viewAllTransactions":
             viewAllTransactions();
             break;
         case "viewItemAge":
@@ -165,3 +164,30 @@ function doStuff(action, input) {
     }
     
 }
+
+function main() {
+    console.log("Running inventory tests...");
+
+    doStuff("add", ["Apple", "Fruit", 10, 1.5, "kg"]);
+    doStuff("add", ["Banana", "Fruit", 5, 1, "kg"]);
+    doStuff("add", ["Orange", "Fruit", 3, 2, "kg"]);
+    doStuff("add", ["Milk", "Dairy", 5, 3, "litre"]);
+
+    doStuff("sale", ["Apple", 2]);
+    doStuff("restock", ["Milk", 2]);
+
+    doStuff("search", ["mil"]);
+    
+    doStuff("viewInventory");
+    doStuff("viewItemAge");
+
+    doStuff("exportAll");
+    doStuff("viewAllTransactions");
+
+    doStuff("import", [{ name: "Pineapple", category: "Fruit", quantity: 5, price: 3, unit: "kg" }]);
+
+    doStuff("addField", ["Origin"]);
+    doStuff("updateCustomField", ["Apple", "Origin", "India"]);
+}
+
+main();
